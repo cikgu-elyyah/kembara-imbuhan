@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KEMBARA IMBUHAN — Misi Tatabahasa Melayu</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Orbitron (Sci-Fi Display) & Inter (Clean Readability) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --sector-primary: #22d3ee;
+      --sector-glow: rgba(34, 211, 238, 0.35);
+      --sector-bg: rgba(8, 51, 68, 0.45);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+      color: #f8fafc;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .font-display {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Full-screen animated sci-fi background canvas */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Confetti canvas on results screen */
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      pointer-events: none;
+    }
+
+    /* Dark Glassmorphism Panel with Neon Corner Brackets */
+    .cyber-panel {
+      position: relative;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .cyber-panel::before,
+    .cyber-panel::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .cyber-panel::before {
+      top: -1px;
+      left: -1px;
+      border-top: 2px solid var(--sector-primary);
+      border-left: 2px solid var(--sector-primary);
+      border-top-left-radius: 12px;
+    }
+
+    .cyber-panel::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 2px solid var(--sector-primary);
+      border-right: 2px solid var(--sector-primary);
+      border-bottom-right-radius: 12px;
+    }
+
+    /* Sector Theme Overrides */
+    body.theme-alfa {
+      --sector-primary: #22d3ee;
+      --sector-glow: rgba(34, 211, 238, 0.35);
+    }
+    body.theme-beta {
+      --sector-primary: #f59e0b;
+      --sector-glow: rgba(245, 158, 11, 0.35);
+    }
+    body.theme-omega {
+      --sector-primary: #d946ef;
+      --sector-glow: rgba(217, 70, 239, 0.35);
+    }
+
+    /* Interactive Option Buttons */
+    .option-btn {
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      background: rgba(30, 41, 59, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .option-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: var(--sector-primary);
+      box-shadow: 0 0 20px var(--sector-glow);
+      background: rgba(30, 41, 59, 0.95);
+    }
+    .option-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .option-btn.state-correct {
+      background: rgba(16, 185, 129, 0.22) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.35) !important;
+      color: #a7f3d0 !important;
+    }
+    .option-btn.state-wrong {
+      background: rgba(244, 63, 94, 0.16) !important;
+      border-color: rgba(244, 63, 94, 0.6) !important;
+      color: #fda4af !important;
+      opacity: 0.55;
+      text-decoration: line-through;
+    }
+
+    /* Blank Pill in Sentence */
+    .blank-slot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 115px;
+      padding: 2px 14px;
+      margin: 0 4px;
+      border-bottom: 2px dashed var(--sector-primary);
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 8px;
+      color: var(--sector-primary);
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .blank-slot.filled-correct {
+      border-bottom: 2px solid #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+    .blank-slot.filled-reveal {
+      border-bottom: 2px solid #f59e0b;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fde68a;
+    }
+
+    /* Live Word-Class Highlights in Sentence */
+    .hl-before {
+      background: rgba(56, 189, 248, 0.22);
+      border: 1px solid rgba(56, 189, 248, 0.65);
+      color: #7dd3fc;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .hl-after {
+      background: rgba(251, 191, 36, 0.22);
+      border: 1px solid rgba(251, 191, 36, 0.65);
+      color: #fde68a;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    /* Smooth Reveal Animation */
+    @keyframes slideFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-reveal {
+      animation: slideFadeIn 0.32s ease-out forwards;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.5);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.7);
+    }
+  </style>
+</head>
+<body class="theme-alfa antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Animated Futuristic Background Canvas -->
+  <canvas id="bgCanvas"></canvas>
+  <!-- Confetti Overlay Canvas -->
+  <canvas id="confettiCanvas" class="hidden"></canvas>
+
+  <!-- Main App Wrapper -->
+  <div class="relative z-10 min-h-screen flex flex-col">
+
+    <!-- Top HUD Navigation Bar -->
+    <header class="w-full border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-md sticky top-0 z-30">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-700 flex items-center justify-center shadow-lg shadow-cyan-500/25 border border-cyan-300/30">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="font-display text-base sm:text-lg font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">
+              KEMBARA IMBUHAN
+            </h1>
+            <p class="text-[11px] text-slate-400 tracking-wide uppercase">Sistem Latihan Tatabahasa Dewan</p>
+          </div>
+        </div>
+
+        <!-- Status Badges & Controls -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Cloud / Local Storage Sync Badge -->
+          <span id="syncBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800/90 border border-slate-700 text-slate-300">
+            <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span id="syncText">Simpanan Tempatan</span>
+          </span>
+
+          <!-- Google Sheets Teacher Monitor Badge -->
+          <span id="sheetBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800/90 border border-slate-700 text-slate-300">
+            <span id="sheetDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span id="sheetText">Mod Latihan</span>
+          </span>
+
+          <!-- Sound Mute Toggle -->
+          <button id="muteBtn" type="button" title="Tukar Bunyi" class="p-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 transition">
+            <svg id="soundOnIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" />
+            </svg>
+            <svg id="soundOffIcon" class="w-4 h-4 hidden text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+            </svg>
+          </button>
+
+          <!-- Active Pilot & Switch User Button -->
+          <div id="pilotHud" class="hidden items-center gap-2 pl-2 border-l border-slate-700/80">
+            <div class="text-right hidden sm:block">
+              <div id="hudPilotName" class="text-xs font-bold text-cyan-200 leading-tight"></div>
+              <div id="hudPilotClass" class="text-[11px] text-slate-400 leading-tight"></div>
+            </div>
+            <button id="switchUserBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-semibold text-slate-200 transition">
+              Tukar Pengguna
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 py-6 sm:py-10 flex flex-col justify-center">
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 1: PENDAFTARAN JURUTERBANG (LOGIN)                 -->
+      <!-- ========================================================= -->
+      <section id="loginScreen" class="w-full max-w-lg mx-auto animate-reveal">
+        <div class="cyber-panel rounded-2xl p-6 sm:p-8">
+          <div class="text-center mb-6">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 mb-3">
+              Akses Stesen Angkasa
+            </span>
+            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-white mb-2">
+              Pendaftaran Juruterbang
+            </h2>
+            <p class="text-sm text-slate-300">
+              Masukkan nama penuh dan kelas anda untuk merekodkan kemajuan misi tatabahasa.
+            </p>
+          </div>
+
+          <form id="loginForm" class="space-y-4">
+            <div>
+              <label for="inputName" class="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                Nama Murid
+              </label>
+              <input
+                id="inputName"
+                type="text"
+                required
+                autocomplete="name"
+                placeholder="Contoh: Aisyah binti Rahman"
+                class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/25 transition"
+              />
+            </div>
+
+            <div>
+              <label for="inputClass" class="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                Kelas
+              </label>
+              <input
+                id="inputClass"
+                type="text"
+                required
+                placeholder="Contoh: 4 Cekal"
+                class="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/25 transition"
+              />
+            </div>
+
+            <div id="loginError" class="hidden text-xs font-medium text-rose-300 bg-rose-500/15 border border-rose-500/40 rounded-xl px-3.5 py-2.5"></div>
+
+            <button
+              type="submit"
+              class="w-full py-3.5 px-6 rounded-xl font-display font-bold text-sm uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 shadow-lg shadow-cyan-500/25 transition transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Mulakan Misi
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 2: PILIHAN SEKTOR & SAMBUNG MISI                   -->
+      <!-- ========================================================= -->
+      <section id="sectorScreen" class="hidden w-full animate-reveal space-y-6">
+        <!-- Welcome-Back Resume Banner (Shown only if active session exists) -->
+        <div id="resumeBanner" class="hidden cyber-panel rounded-2xl p-5 sm:p-6 border-cyan-400/40 bg-cyan-950/30">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                Misi Tergendala Dikesan
+              </div>
+              <h3 class="text-lg font-bold text-white" id="resumeTitle">Selamat Kembali!</h3>
+              <p class="text-sm text-slate-300" id="resumeDesc">Anda sedang berada di pertengahan misi.</p>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+              <button id="resumeMissionBtn" type="button" class="px-5 py-2.5 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 hover:from-cyan-300 hover:to-sky-300 shadow-lg shadow-cyan-500/20 transition">
+                Sambung Misi
+              </button>
+              <button id="dismissResumeBtn" type="button" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition">
+                Pilih Sektor
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sector Selection Header -->
+        <div class="text-center">
+          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-white mb-2">
+            Pilih Sektor Misi
+          </h2>
+          <p class="text-sm text-slate-300 max-w-xl mx-auto">
+            Setiap sektor mengandungi 10 soalan tatabahasa yang disusun secara rawak pada setiap permainan.
+          </p>
+        </div>
+
+        <!-- 3 Sector Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Sektor Alfa -->
+          <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between border-cyan-500/30 hover:border-cyan-400/70 transition">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-display font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                  Tahap 1
+                </span>
+                <span id="statusAlfa" class="text-xs font-semibold text-slate-400">Belum Dimulakan</span>
+              </div>
+              <h3 class="font-display text-xl font-bold text-cyan-300 mb-1.5">Sektor Alfa</h3>
+              <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Fokus kepada imbuhan awalan: <strong class="text-cyan-200">meN-, ber-, ter-, di-,</strong> dan <strong class="text-cyan-200">peN-</strong>.
+              </p>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-xs bg-slate-900/70 rounded-xl px-3 py-2 border border-slate-800">
+                <span class="text-slate-400">Skor Terbaik</span>
+                <span id="bestAlfa" class="font-display font-bold text-cyan-300">0 / 1000</span>
+              </div>
+              <button onclick="startNewSector('alfa')" type="button" class="w-full py-2.5 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-cyan-500/20 hover:bg-cyan-500 text-cyan-200 hover:text-slate-950 border border-cyan-400/50 transition">
+                Lancar Sektor Alfa
+              </button>
+            </div>
+          </div>
+
+          <!-- Sektor Beta -->
+          <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between border-amber-500/30 hover:border-amber-400/70 transition">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-display font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                  Tahap 2
+                </span>
+                <span id="statusBeta" class="text-xs font-semibold text-slate-400">Belum Dimulakan</span>
+              </div>
+              <h3 class="font-display text-xl font-bold text-amber-300 mb-1.5">Sektor Beta</h3>
+              <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Fokus kepada akhiran dan apitan: <strong class="text-amber-200">-an, -kan, -i, meN-...-kan, di-...-kan,</strong> dan <strong class="text-amber-200">ber-...-an</strong>.
+              </p>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-xs bg-slate-900/70 rounded-xl px-3 py-2 border border-slate-800">
+                <span class="text-slate-400">Skor Terbaik</span>
+                <span id="bestBeta" class="font-display font-bold text-amber-300">0 / 1000</span>
+              </div>
+              <button onclick="startNewSector('beta')" type="button" class="w-full py-2.5 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-amber-500/20 hover:bg-amber-500 text-amber-200 hover:text-slate-950 border border-amber-400/50 transition">
+                Lancar Sektor Beta
+              </button>
+            </div>
+          </div>
+
+          <!-- Sektor Omega -->
+          <div class="cyber-panel rounded-2xl p-5 flex flex-col justify-between border-fuchsia-500/30 hover:border-fuchsia-400/70 transition">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-display font-bold uppercase tracking-wider bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-400/30">
+                  Tahap 3
+                </span>
+                <span id="statusOmega" class="text-xs font-semibold text-slate-400">Belum Dimulakan</span>
+              </div>
+              <h3 class="font-display text-xl font-bold text-fuchsia-300 mb-1.5">Sektor Omega</h3>
+              <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Pembezaan halus tatabahasa: <strong class="text-fuchsia-200">menghadiahi/menghadiahkan, menjalani/menjalankan, dinaiki/dinaikkan,</strong> dan <strong class="text-fuchsia-200">memper-</strong>.
+              </p>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-xs bg-slate-900/70 rounded-xl px-3 py-2 border border-slate-800">
+                <span class="text-slate-400">Skor Terbaik</span>
+                <span id="bestOmega" class="font-display font-bold text-fuchsia-300">0 / 1000</span>
+              </div>
+              <button onclick="startNewSector('omega')" type="button" class="w-full py-2.5 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-fuchsia-500/20 hover:bg-fuchsia-500 text-fuchsia-200 hover:text-slate-950 border border-fuchsia-400/50 transition">
+                Lancar Sektor Omega
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 3: PERMAINAN (GAMEPLAY)                            -->
+      <!-- ========================================================= -->
+      <section id="gameScreen" class="hidden w-full animate-reveal space-y-5">
+        <!-- Top Mission Stats Bar -->
+        <div class="cyber-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <button id="backToSectorsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition">
+              &larr; Sektor
+            </button>
+            <div>
+              <div id="gameSectorLabel" class="font-display text-sm font-bold text-cyan-300 uppercase tracking-wider">Sektor Alfa</div>
+              <div id="gameProgressText" class="text-xs text-slate-400">Soalan 1 daripada 10</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 sm:gap-5">
+            <!-- Combo Counter -->
+            <div class="text-center">
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Kombo</div>
+              <div id="gameCombo" class="font-display text-base font-extrabold text-amber-300">x0</div>
+            </div>
+            <!-- Score Counter -->
+            <div class="text-center">
+              <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Skor</div>
+              <div id="gameScore" class="font-display text-base font-extrabold text-white">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full h-2 rounded-full bg-slate-800/90 overflow-hidden border border-slate-700/60">
+          <div id="progressBarFill" class="h-full rounded-full transition-all duration-500 bg-cyan-400" style="width: 10%"></div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="cyber-panel rounded-2xl p-5 sm:p-8 space-y-6">
+          <!-- Kata Dasar Badge & Attempt Indicator -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Kata Dasar:</span>
+              <span id="kataDasarBadge" class="font-display text-sm font-bold text-cyan-300 tracking-wide">baca</span>
+            </div>
+            <span id="attemptBadge" class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              Cubaan 1 (+100 mata)
+            </span>
+          </div>
+
+          <!-- Sentence Display -->
+          <div class="bg-slate-950/65 border border-slate-800 rounded-2xl p-5 sm:p-6">
+            <p id="sentenceDisplay" class="text-lg sm:text-xl leading-relaxed text-slate-100 font-medium text-center"></p>
+          </div>
+
+          <!-- Progressive Two-Stage Hint Panel -->
+          <div id="hintPanel" class="hidden animate-reveal rounded-2xl bg-slate-900/90 border border-sky-500/40 p-4 sm:p-5 space-y-3">
+            <div class="flex items-center gap-2 text-xs font-display font-bold uppercase tracking-wider text-sky-300">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              PETUNJUK KONTEKS (GOLONGAN KATA)
+            </div>
+
+            <!-- Stage 1: Word Before & Word After Clues (Shown on 1st mistake) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+              <div class="rounded-xl bg-sky-950/50 border border-sky-500/35 p-3">
+                <div class="text-[11px] uppercase tracking-wider text-sky-300 font-bold mb-1">Perkataan Sebelum Tempat Kosong</div>
+                <div class="text-white font-semibold">
+                  "<span id="hintBeforeWord" class="text-sky-300"></span>" &rarr; <span id="hintBeforeClass" class="text-slate-200"></span>
+                </div>
+              </div>
+              <div class="rounded-xl bg-amber-950/40 border border-amber-500/35 p-3">
+                <div class="text-[11px] uppercase tracking-wider text-amber-300 font-bold mb-1">Perkataan Selepas Tempat Kosong</div>
+                <div class="text-white font-semibold">
+                  "<span id="hintAfterWord" class="text-amber-300"></span>" &rarr; <span id="hintAfterClass" class="text-slate-200"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 2: Final Concluding Hint Statement (HIDDEN on 1st mistake, REVEALED on 2nd mistake) -->
+            <div id="hintConclusionBox" class="hidden animate-reveal rounded-xl bg-rose-950/45 border border-rose-400/50 p-3.5">
+              <div class="text-[11px] font-display font-bold uppercase tracking-wider text-rose-300 mb-1">
+                Rumusan Petunjuk
+              </div>
+              <p id="hintConclusionText" class="text-xs sm:text-sm text-rose-100 leading-relaxed font-medium"></p>
+            </div>
+          </div>
+
+          <!-- 4 Shuffled Answer Options -->
+          <div id="optionsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+
+          <!-- Feedback & Tatabahasa Dewan Explanation Panel -->
+          <div id="feedbackPanel" class="hidden animate-reveal rounded-2xl p-4 sm:p-5 border space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div id="feedbackTitle" class="font-display text-sm sm:text-base font-bold uppercase tracking-wide"></div>
+              <span id="feedbackPoints" class="text-xs font-display font-bold px-2.5 py-1 rounded-lg"></span>
+            </div>
+            <p id="feedbackExplanation" class="text-sm text-slate-200 leading-relaxed"></p>
+            <div class="pt-1 flex justify-end">
+              <button id="nextQuestionBtn" type="button" class="px-6 py-2.5 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 hover:from-cyan-300 hover:to-sky-300 shadow-lg transition">
+                Soalan Seterusnya &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 4: KEPUTUSAN MISI & SEMAK JAWAPAN                  -->
+      <!-- ========================================================= -->
+      <section id="resultScreen" class="hidden w-full animate-reveal space-y-6">
+        <div class="cyber-panel rounded-2xl p-6 sm:p-8 text-center space-y-5">
+          <div class="inline-block px-3 py-1 rounded-full text-xs font-display font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+            Misi Tamat
+          </div>
+
+          <h2 id="resultTitle" class="font-display text-2xl sm:text-3xl font-extrabold text-white">
+            Tahniah, Juruterbang!
+          </h2>
+
+          <!-- Star Rating -->
+          <div id="starRating" class="flex items-center justify-center gap-2 text-3xl sm:text-4xl"></div>
+
+          <!-- Score Summary Grid -->
+          <div class="grid grid-cols-3 gap-3 max-w-md mx-auto">
+            <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-3">
+              <div class="text-[11px] uppercase text-slate-400 font-bold">Skor Akhir</div>
+              <div id="resultScore" class="font-display text-xl font-extrabold text-cyan-300">0</div>
+            </div>
+            <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-3">
+              <div class="text-[11px] uppercase text-slate-400 font-bold">Ketepatan</div>
+              <div id="resultAccuracy" class="font-display text-xl font-extrabold text-emerald-300">0%</div>
+            </div>
+            <div class="rounded-xl bg-slate-900/80 border border-slate-800 p-3">
+              <div class="text-[11px] uppercase text-slate-400 font-bold">Kombo Maks</div>
+              <div id="resultMaxCombo" class="font-display text-xl font-extrabold text-amber-300">x0</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button id="replaySectorBtn" type="button" class="px-6 py-3 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 hover:from-cyan-300 hover:to-sky-300 shadow-lg transition">
+              Main Semula (Soalan Rawak)
+            </button>
+            <button id="resultSectorsBtn" type="button" class="px-6 py-3 rounded-xl font-display text-xs font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 transition">
+              Pilih Sektor Lain
+            </button>
+          </div>
+        </div>
+
+        <!-- Semak Jawapan Review List -->
+        <div class="cyber-panel rounded-2xl p-5 sm:p-6 space-y-4">
+          <h3 class="font-display text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <span>Semak Jawapan</span>
+            <span class="text-xs font-sans font-normal text-slate-400">(Rujukan Tatabahasa Dewan)</span>
+          </h3>
+          <div id="reviewList" class="space-y-3"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- APPLICATION LOGIC & FIREBASE / GOOGLE SHEETS INTEGRATION  -->
+  <!-- ========================================================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. GOOGLE SHEETS TEACHER MONITOR CONFIGURATION
+    // =========================================================================
+    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxK8NP9jdsv6z1JYRFMtxlymoqpf7hN6SQrkmiUeYr8CN7_Ou2fvUuR-KXA_aPcm4cb/exec';
+
+    function isGoogleSheetActive() {
+      return (
+        typeof GOOGLE_SHEET_URL === 'string' &&
+        GOOGLE_SHEET_URL.startsWith('https://script.google.com/') &&
+        !GOOGLE_SHEET_URL.includes('PASTE_YOUR_WEB_APP_URL_HERE')
+      );
+    }
+
+    function updateSheetBadge() {
+      const dot = document.getElementById('sheetDot');
+      const text = document.getElementById('sheetText');
+      if (isGoogleSheetActive()) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        text.textContent = 'Rekod Guru Aktif';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        text.textContent = 'Mod Latihan';
+      }
+    }
+
+    async function sendToGoogleSheet(payload) {
+      if (!isGoogleSheetActive()) return;
+      try {
+        await fetch(GOOGLE_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn('Google Sheets sync warning:', err);
+      }
+    }
+
+    // =========================================================================
+    // 2. FIREBASE FIRESTORE SETUP WITH LOCALSTORAGE FALLBACK
+    // =========================================================================
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let cloudEnabled = false;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'kembara-imbuhan-app';
+
+    async function initCloudStorage() {
+      const syncDot = document.getElementById('syncDot');
+      const syncText = document.getElementById('syncText');
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          const firebaseConfig = typeof __firebase_config === 'string'
+            ? JSON.parse(__firebase_config)
+            : __firebase_config;
+          const app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            currentUser = cred.user;
+          }
+
+          if (currentUser) {
+            cloudEnabled = true;
+            syncDot.className = 'w-2 h-2 rounded-full bg-cyan-400';
+            syncText.textContent = 'Awan Disegerakkan';
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Cloud storage unavailable, using localStorage fallback:', err);
+      }
+      cloudEnabled = false;
+      syncDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      syncText.textContent = 'Simpanan Tempatan';
+    }
+
+    function getLocalKey(profileId) {
+      return `kembara_imbuhan_profile_${profileId}`;
+    }
+
+    async function loadProfile(profileId) {
+      // Try Firestore first if authenticated
+      if (cloudEnabled && db && currentUser) {
+        try {
+          const ref = doc(db, 'artifacts', appId, 'public', 'data', 'kembara_profiles', profileId);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const data = snap.data();
+            if (typeof data.activeSession === 'string') {
+              try { data.activeSession = JSON.parse(data.activeSession); } catch (_) {}
+            }
+            return data;
+          }
+        } catch (err) {
+          console.warn('Firestore read fallback:', err);
+        }
+      }
+      // Fallback to localStorage
+      try {
+        const raw = localStorage.getItem(getLocalKey(profileId));
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    async function saveProfile(profile) {
+      // Always save to localStorage as immediate backup
+      try {
+        localStorage.setItem(getLocalKey(profile.profileId), JSON.stringify(profile));
+      } catch (_) {}
+
+      // Sync to Firestore if available
+      if (cloudEnabled && db && currentUser) {
+        try {
+          const ref = doc(db, 'artifacts', appId, 'public', 'data', 'kembara_profiles', profile.profileId);
+          const payload = {
+            ...profile,
+            activeSession: profile.activeSession ? JSON.stringify(profile.activeSession) : null,
+            updatedAt: new Date().toISOString()
+          };
+          await setDoc(ref, payload, { merge: true });
+        } catch (err) {
+          console.warn('Firestore write fallback:', err);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 3. QUESTION BANK (30 TATABAHASA DEWAN QUESTIONS — 10 PER SECTOR)
+    // =========================================================================
+    const SECTOR_META = {
+      alfa: {
+        name: 'Sektor Alfa',
+        levelLabel: 'Tahap 1',
+        themeClass: 'theme-alfa',
+        barColor: 'bg-cyan-400',
+        textColor: 'text-cyan-300'
+      },
+      beta: {
+        name: 'Sektor Beta',
+        levelLabel: 'Tahap 2',
+        themeClass: 'theme-beta',
+        barColor: 'bg-amber-400',
+        textColor: 'text-amber-300'
+      },
+      omega: {
+        name: 'Sektor Omega',
+        levelLabel: 'Tahap 3',
+        themeClass: 'theme-omega',
+        barColor: 'bg-fuchsia-400',
+        textColor: 'text-fuchsia-300'
+      }
+    };
+
+    const QUESTION_BANK = {
+      alfa: [
+        {
+          id: 'A1',
+          before: 'Adik sedang',
+          after: 'buku cerita di ruang tamu.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'buku',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'baca',
+          options: ['membaca', 'dibaca', 'terbaca', 'pembaca'],
+          answer: 'membaca',
+          hintConclusion: 'Kata bantu "sedang" yang diikuti objek "buku" memerlukan kata kerja aktif transitif berawalan meN-.',
+          explanation: 'Imbuhan awalan "mem-" pada kata dasar "baca" membentuk kata kerja aktif transitif "membaca" yang memerlukan objek ("buku cerita").'
+        },
+        {
+          id: 'A2',
+          before: 'Bilik darjah itu telah',
+          after: 'oleh murid-murid pagi tadi.',
+          beforeWord: 'telah',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'oleh',
+          afterClass: 'Kata Sendi Nama (Pelaku)',
+          kataDasar: 'sapu',
+          options: ['disapu', 'menyapu', 'tersapu', 'penyapu'],
+          answer: 'disapu',
+          hintConclusion: 'Kehadiran kata sendi "oleh" selepas tempat kosong menandakan ayat pasif yang memerlukan awalan di-.',
+          explanation: 'Ayat pasif diri ketiga menggunakan awalan "di-" ("disapu") apabila diikuti oleh frasa sendi nama "oleh + pelaku".'
+        },
+        {
+          id: 'A3',
+          before: 'Farah gemar',
+          after: 'di taman rekreasi setiap petang.',
+          beforeWord: 'gemar',
+          beforeClass: 'Kata Adjektif',
+          afterWord: 'di',
+          afterClass: 'Kata Sendi Nama (Tempat)',
+          kataDasar: 'basikal',
+          options: ['berbasikal', 'membasikal', 'dibasikal', 'terbasikal'],
+          answer: 'berbasikal',
+          hintConclusion: 'Kata kerja tak transitif yang menyatakan perbuatan menggunakan kenderaan memerlukan awalan ber-.',
+          explanation: 'Awalan "ber-" pada kata nama "basikal" membentuk kata kerja tak transitif "berbasikal" yang bermaksud menunggang basikal.'
+        },
+        {
+          id: 'A4',
+          before: 'Aiman',
+          after: 'batu besar lalu jatuh di tepi jalan.',
+          beforeWord: 'Aiman',
+          beforeClass: 'Kata Nama Khas (Subjek)',
+          afterWord: 'batu',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'sepak',
+          options: ['tersepak', 'menyepak', 'disepak', 'bersepak'],
+          answer: 'tersepak',
+          hintConclusion: 'Perbuatan yang berlaku secara tidak sengaja sehingga menyebabkan jatuh memerlukan awalan ter-.',
+          explanation: 'Awalan "ter-" pada "tersepak" membawa maksud perbuatan yang tidak disengajakan.'
+        },
+        {
+          id: 'A5',
+          before: 'Beliau merupakan seorang',
+          after: 'novel terkenal di negara ini.',
+          beforeWord: 'seorang',
+          beforeClass: 'Penjodoh Bilangan (Manusia)',
+          afterWord: 'novel',
+          afterClass: 'Kata Nama',
+          kataDasar: 'tulis',
+          options: ['penulis', 'menulis', 'ditulis', 'tertulis'],
+          answer: 'penulis',
+          hintConclusion: 'Penjodoh bilangan "seorang" merujuk kepada pelaku manusia, maka awalan kata nama peN- diperlukan.',
+          explanation: 'Awalan "peN-" pada kata dasar "tulis" (huruf t digugurkan) membentuk kata nama pelaku "penulis".'
+        },
+        {
+          id: 'A6',
+          before: 'Ibu sedang',
+          after: 'sayur kangkung di dapur.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'sayur',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'goreng',
+          options: ['menggoreng', 'digoreng', 'tergoreng', 'penggoreng'],
+          answer: 'menggoreng',
+          hintConclusion: 'Subjek pelaku ("Ibu") dengan kata bantu "sedang" dan objek "sayur" memerlukan kata kerja aktif berawalan meN-.',
+          explanation: 'Kata dasar "goreng" bermula dengan huruf g, maka awalan "meng-" digunakan untuk membentuk "menggoreng".'
+        },
+        {
+          id: 'A7',
+          before: 'Semua murid',
+          after: 'di padang sebelum perhimpunan bermula.',
+          beforeWord: 'murid',
+          beforeClass: 'Kata Nama (Subjek)',
+          afterWord: 'di',
+          afterClass: 'Kata Sendi Nama (Tempat)',
+          kataDasar: 'baris',
+          options: ['berbaris', 'membaris', 'dibaris', 'pembaris'],
+          answer: 'berbaris',
+          hintConclusion: 'Perbuatan tanpa objek yang diikuti frasa tempat "di padang" memerlukan kata kerja tak transitif berawalan ber-.',
+          explanation: 'Awalan "ber-" membentuk kata kerja tak transitif "berbaris" yang bermaksud berdiri dalam barisan.'
+        },
+        {
+          id: 'A8',
+          before: 'Pintu gerbang itu',
+          after: 'luas apabila kami tiba.',
+          beforeWord: 'itu',
+          beforeClass: 'Kata Tunjuk (Subjek)',
+          afterWord: 'luas',
+          afterClass: 'Kata Adjektif (Keadaan)',
+          kataDasar: 'buka',
+          options: ['terbuka', 'membuka', 'dibuka', 'pembuka'],
+          answer: 'terbuka',
+          hintConclusion: 'Frasa ini menyatakan keadaan yang sudah sedia berlaku tanpa menyatakan pelaku, jadi awalan ter- paling tepat.',
+          explanation: 'Awalan "ter-" pada "terbuka" menyatakan keadaan tersedia atau sudah berlaku.'
+        },
+        {
+          id: 'A9',
+          before: 'Pihak polis berjaya menangkap',
+          after: 'kereta mewah tersebut.',
+          beforeWord: 'menangkap',
+          beforeClass: 'Kata Kerja Transitif',
+          afterWord: 'kereta',
+          afterClass: 'Kata Nama',
+          kataDasar: 'curi',
+          options: ['pencuri', 'mencuri', 'dicuri', 'tercuri'],
+          answer: 'pencuri',
+          hintConclusion: 'Kata kerja "menangkap" memerlukan objek berupa orang/pelaku, maka awalan kata nama peN- diperlukan.',
+          explanation: 'Awalan "pen-" pada kata dasar "curi" membentuk kata nama "pencuri" yang merujuk kepada orang yang mencuri.'
+        },
+        {
+          id: 'A10',
+          before: 'Surat rasmi itu telah',
+          after: 'oleh guru besar semalam.',
+          beforeWord: 'telah',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'oleh',
+          afterClass: 'Kata Sendi Nama (Pelaku)',
+          kataDasar: 'hantar',
+          options: ['dihantar', 'menghantar', 'terhantar', 'penghantar'],
+          answer: 'dihantar',
+          hintConclusion: 'Kata sendi "oleh" selepas tempat kosong menunjukkan binaan ayat pasif yang memerlukan awalan di-.',
+          explanation: 'Awalan "di-" membentuk kata kerja pasif "dihantar" bagi subjek "Surat rasmi itu".'
+        }
+      ],
+      beta: [
+        {
+          id: 'B1',
+          before: 'Cikgu meminta kami menyiapkan',
+          after: 'Matematik sebelum hari Jumaat.',
+          beforeWord: 'menyiapkan',
+          beforeClass: 'Kata Kerja Transitif',
+          afterWord: 'Matematik',
+          afterClass: 'Kata Nama Khas',
+          kataDasar: 'latih',
+          options: ['latihan', 'melatih', 'dilatih', 'berlatih'],
+          answer: 'latihan',
+          hintConclusion: 'Kata kerja "menyiapkan" memerlukan objek berupa kata nama terbitan berakhiran -an.',
+          explanation: 'Akhiran "-an" pada kata dasar "latih" membentuk kata nama "latihan" yang berfungsi sebagai objek kepada "menyiapkan".'
+        },
+        {
+          id: 'B2',
+          before: 'Tolong',
+          after: 'lampu bilik sebelum anda keluar.',
+          beforeWord: 'Tolong',
+          beforeClass: 'Kata Perintah (Permintaan)',
+          afterWord: 'lampu',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'padam',
+          options: ['padamkan', 'memadamkan', 'dipadamkan', 'pemadaman'],
+          answer: 'padamkan',
+          hintConclusion: 'Ayat perintah dengan kata "Tolong" menggugurkan awalan meN- dan mengekalkan akhiran -kan.',
+          explanation: 'Dalam ayat perintah aktif, kata kerja transitif menggunakan akhiran "-kan" tanpa awalan "meN-", iaitu "padamkan".'
+        },
+        {
+          id: 'B3',
+          before: 'Jangan',
+          after: 'kawasan larangan yang berbahaya itu.',
+          beforeWord: 'Jangan',
+          beforeClass: 'Kata Perintah (Larangan)',
+          afterWord: 'kawasan',
+          afterClass: 'Kata Nama (Tempat)',
+          kataDasar: 'dekat',
+          options: ['dekati', 'mendekati', 'didekati', 'berdekatan'],
+          answer: 'dekati',
+          hintConclusion: 'Ayat larangan dengan "Jangan" yang diikuti objek tempat memerlukan akhiran -i tanpa awalan meN-.',
+          explanation: 'Akhiran "-i" pada "dekati" membawa unsur tempat/arah dan digunakan tanpa awalan "meN-" dalam ayat larangan.'
+        },
+        {
+          id: 'B4',
+          before: 'Kerajaan sedang',
+          after: 'sistem pengangkutan awam di bandar.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'sistem',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'bangun',
+          options: ['membangunkan', 'dibangunkan', 'pembangunan', 'berbangun'],
+          answer: 'membangunkan',
+          hintConclusion: 'Kata bantu "sedang" dengan subjek pelaku dan objek "sistem" memerlukan apitan kata kerja aktif meN-...-kan.',
+          explanation: 'Apitan "mem-...-kan" membentuk kata kerja aktif transitif "membangunkan" yang bermaksud memajukan atau membina.'
+        },
+        {
+          id: 'B5',
+          before: 'Pertandingan syarahan itu akan',
+          after: 'di dewan sekolah minggu hadapan.',
+          beforeWord: 'akan',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'di',
+          afterClass: 'Kata Sendi Nama (Tempat)',
+          kataDasar: 'ada',
+          options: ['diadakan', 'mengadakan', 'berada', 'keadaan'],
+          answer: 'diadakan',
+          hintConclusion: 'Subjek "Pertandingan syarahan" menerima perbuatan, maka apitan kata kerja pasif di-...-kan diperlukan.',
+          explanation: 'Apitan "di-...-kan" membentuk kata kerja pasif "diadakan" yang sesuai dengan subjek tidak bernyawa.'
+        },
+        {
+          id: 'B6',
+          before: 'Daun-daun kering',
+          after: 'di halaman rumah apabila angin bertiup.',
+          beforeWord: 'kering',
+          beforeClass: 'Kata Adjektif (Subjek Jamak)',
+          afterWord: 'di',
+          afterClass: 'Kata Sendi Nama (Tempat)',
+          kataDasar: 'gugur',
+          options: ['berguguran', 'menggugurkan', 'digugurkan', 'guguran'],
+          answer: 'berguguran',
+          hintConclusion: 'Subjek jamak ("Daun-daun kering") yang melakukan perbuatan berulang-ulang memerlukan apitan ber-...-an.',
+          explanation: 'Apitan "ber-...-an" pada "berguguran" menunjukkan perbuatan yang berlaku secara banyak dan berterusan.'
+        },
+        {
+          id: 'B7',
+          before: 'Pengawas itu',
+          after: 'nama murid yang lewat datang.',
+          beforeWord: 'itu',
+          beforeClass: 'Kata Tunjuk (Subjek Pelaku)',
+          afterWord: 'nama',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'catat',
+          options: ['mencatatkan', 'dicatatkan', 'catatan', 'bercatatan'],
+          answer: 'mencatatkan',
+          hintConclusion: 'Subjek pelaku ("Pengawas") yang diikuti objek "nama" memerlukan kata kerja aktif transitif berapitan meN-...-kan.',
+          explanation: 'Apitan "men-...-kan" membentuk kata kerja aktif transitif "mencatatkan" yang bermaksud menulis sesuatu sebagai rekod.'
+        },
+        {
+          id: 'B8',
+          before: 'Bintang-bintang',
+          after: 'di langit malam yang cerah.',
+          beforeWord: 'Bintang-bintang',
+          beforeClass: 'Kata Nama Ganda (Jamak)',
+          afterWord: 'di',
+          afterClass: 'Kata Sendi Nama (Tempat)',
+          kataDasar: 'kelip',
+          options: ['berkelipan', 'mengelipkan', 'dikelipkan', 'kelipan'],
+          answer: 'berkelipan',
+          hintConclusion: 'Kata nama ganda jamak yang menyatakan keadaan berterusan di sesuatu tempat memerlukan apitan ber-...-an.',
+          explanation: 'Apitan "ber-...-an" pada "berkelipan" menggambarkan banyak bintang yang memancarkan cahaya secara berterusan.'
+        },
+        {
+          id: 'B9',
+          before: 'Hadiah utama tersebut telah',
+          after: 'kepada pemenang tempat pertama.',
+          beforeWord: 'telah',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'kepada',
+          afterClass: 'Kata Sendi Nama (Penerima)',
+          kataDasar: 'serah',
+          options: ['diserahkan', 'menyerahkan', 'penyerahan', 'berserah'],
+          answer: 'diserahkan',
+          hintConclusion: 'Subjek "Hadiah utama" yang diikuti "kepada pemenang" memerlukan binaan pasif berapitan di-...-kan.',
+          explanation: 'Apitan "di-...-kan" membentuk kata kerja pasif "diserahkan" yang tepat bagi objek yang diberikan kepada penerima.'
+        },
+        {
+          id: 'B10',
+          before: 'Sila',
+          after: 'borang penyertaan ini dengan lengkap.',
+          beforeWord: 'Sila',
+          beforeClass: 'Kata Perintah (Silaan)',
+          afterWord: 'borang',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'isi',
+          options: ['isikan', 'mengisikan', 'diisikan', 'isian'],
+          answer: 'isikan',
+          hintConclusion: 'Kata silaan "Sila" dalam ayat perintah menggunakan akhiran -kan tanpa awalan meN-.',
+          explanation: 'Dalam ayat perintah silaan, kata kerja transitif tidak menggunakan awalan "meN-", sebaliknya menggunakan bentuk "isikan".'
+        }
+      ],
+      omega: [
+        {
+          id: 'O1',
+          before: 'Sultan telah',
+          after: 'tokoh pendidik itu pingat kebesaran.',
+          beforeWord: 'telah',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'tokoh',
+          afterClass: 'Kata Nama (Penerima Bernyawa)',
+          kataDasar: 'hadiah',
+          options: ['menghadiahi', 'menghadiahkan', 'dihadiahkan', 'berhadiah'],
+          answer: 'menghadiahi',
+          hintConclusion: 'Objek tepat selepas tempat kosong ialah penerima bernyawa ("tokoh"), maka apitan meN-...-i wajib digunakan.',
+          explanation: 'Menurut Tatabahasa Dewan, "menghadiahi" diikuti oleh objek penerima (orang), manakala "menghadiahkan" diikuti oleh barang yang diberikan.'
+        },
+        {
+          id: 'O2',
+          before: 'Ayah',
+          after: 'sebuah jam tangan kepada abang.',
+          beforeWord: 'Ayah',
+          beforeClass: 'Kata Nama (Subjek Pelaku)',
+          afterWord: 'sebuah',
+          afterClass: 'Penjodoh Bilangan (Objek Barang)',
+          kataDasar: 'hadiah',
+          options: ['menghadiahkan', 'menghadiahi', 'dihadiahi', 'hadiahi'],
+          answer: 'menghadiahkan',
+          hintConclusion: 'Objek tepat selepas tempat kosong ialah barang ("sebuah jam tangan"), maka apitan meN-...-kan wajib digunakan.',
+          explanation: 'Apitan "meng-...-kan" pada "menghadiahkan" diikuti oleh objek yang dihadiahkan (barang), diikuti frasa "kepada + penerima".'
+        },
+        {
+          id: 'O3',
+          before: 'Pesakit itu sedang',
+          after: 'rawatan susulan di hospital pakar.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'rawatan',
+          afterClass: 'Kata Nama (Pengalaman/Proses)',
+          kataDasar: 'jalan',
+          options: ['menjalani', 'menjalankan', 'dijalankan', 'perjalanan'],
+          answer: 'menjalani',
+          hintConclusion: 'Apabila subjek mengalami atau melalui sesuatu proses seperti "rawatan", gunakan apitan meN-...-i ("menjalani").',
+          explanation: '"Menjalani" bermaksud mengalami atau melalui sesuatu (seperti rawatan, latihan, hukuman), berbeza dengan "menjalankan" (melaksanakan tugas).'
+        },
+        {
+          id: 'O4',
+          before: 'Para jurutera sedang',
+          after: 'siasatan terhadap kerosakan jambatan itu.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'siasatan',
+          afterClass: 'Kata Nama (Tugas/Tindakan)',
+          kataDasar: 'jalan',
+          options: ['menjalankan', 'menjalani', 'dijalani', 'berjalan'],
+          answer: 'menjalankan',
+          hintConclusion: 'Apabila subjek melaksanakan sesuatu tugas atau tindakan seperti "siasatan", gunakan apitan meN-...-kan ("menjalankan").',
+          explanation: '"Menjalankan" bermaksud melaksanakan atau menguruskan sesuatu tugas seperti siasatan, kajian, atau perniagaan.'
+        },
+        {
+          id: 'O5',
+          before: 'Bas ekspres itu',
+          after: 'oleh empat puluh orang penumpang.',
+          beforeWord: 'itu',
+          beforeClass: 'Kata Tunjuk (Kenderaan)',
+          afterWord: 'oleh',
+          afterClass: 'Kata Sendi Nama (Pelaku)',
+          kataDasar: 'naik',
+          options: ['dinaiki', 'dinaikkan', 'menaikkan', 'kenaikan'],
+          answer: 'dinaiki',
+          hintConclusion: 'Kenderaan yang ditumpangi oleh penumpang memerlukan bentuk pasif berapitan di-...-i ("dinaiki").',
+          explanation: '"Dinaiki" bermaksud ditumpangi (kenderaan) atau dipanjat, manakala "dinaikkan" bermaksud ditinggikan paras atau kedudukannya.'
+        },
+        {
+          id: 'O6',
+          before: 'Bendera Jalur Gemilang',
+          after: 'serentak dengan nyanyian lagu Negaraku.',
+          beforeWord: 'Gemilang',
+          beforeClass: 'Kata Nama Khas (Objek)',
+          afterWord: 'serentak',
+          afterClass: 'Kata Keterangan',
+          kataDasar: 'naik',
+          options: ['dinaikkan', 'dinaiki', 'menaiki', 'bernaik'],
+          answer: 'dinaikkan',
+          hintConclusion: 'Objek yang diangkat ke atas ("Bendera") memerlukan apitan pasif di-...-kan ("dinaikkan").',
+          explanation: '"Dinaikkan" bermaksud diangkat ke tempat yang lebih tinggi, sesuai untuk bendera, harga, atau pangkat.'
+        },
+        {
+          id: 'O7',
+          before: 'Pihak majlis perbandaran berusaha',
+          after: 'kawasan tasik itu untuk pelancong.',
+          beforeWord: 'berusaha',
+          beforeClass: 'Kata Kerja Tak Transitif',
+          afterWord: 'kawasan',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'indah',
+          options: ['memperindah', 'memperindahkan', 'diperindahkan', 'berindah'],
+          answer: 'memperindah',
+          hintConclusion: 'Kata adjektif ("indah") apabila menerima awalan memper- TIDAK memerlukan akhiran -kan.',
+          explanation: 'Menurut Tatabahasa Dewan, awalan "memper-" yang bergabung dengan kata adjektif tidak boleh disertai akhiran "-kan" (bentuk tepat: "memperindah", bukan "memperindahkan").'
+        },
+        {
+          id: 'O8',
+          before: 'Pekerja itu menggunakan jentera untuk',
+          after: 'jalan raya yang sempit tersebut.',
+          beforeWord: 'untuk',
+          beforeClass: 'Kata Hubung',
+          afterWord: 'jalan',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'lebar',
+          options: ['memperlebar', 'memperlebarkan', 'dilebari', 'pelebaran'],
+          answer: 'memperlebar',
+          hintConclusion: 'Kata dasar "lebar" ialah kata adjektif, maka awalan memper- digunakan tanpa akhiran -kan.',
+          explanation: '"Memperlebar" bermaksud menjadikan lebih lebar. Akhiran "-kan" adalah lewah apabila digabungkan dengan "memper- + kata adjektif".'
+        },
+        {
+          id: 'O9',
+          before: 'Hakim telah',
+          after: 'pesalah itu hukuman penjara dua tahun.',
+          beforeWord: 'telah',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'pesalah',
+          afterClass: 'Kata Nama (Penerima Bernyawa)',
+          kataDasar: 'jatuh',
+          options: ['menjatuhi', 'menjatuhkan', 'dijatuhkan', 'terjatuh'],
+          answer: 'menjatuhi',
+          hintConclusion: 'Objek tepat selepas tempat kosong ialah orang ("pesalah"), maka apitan meN-...-i ("menjatuhi") diperlukan.',
+          explanation: '"Menjatuhi" diikuti oleh objek bernyawa ("pesalah itu"), manakala "menjatuhkan" diikuti oleh objek hukuman ("menjatuhkan hukuman").'
+        },
+        {
+          id: 'O10',
+          before: 'Mereka sedang',
+          after: 'ilmu pengetahuan dalam bidang robotik.',
+          beforeWord: 'sedang',
+          beforeClass: 'Kata Bantu Aspek',
+          afterWord: 'ilmu',
+          afterClass: 'Kata Nama (Objek)',
+          kataDasar: 'dalam',
+          options: ['memperdalam', 'memperdalamkan', 'didalamkan', 'kedalaman'],
+          answer: 'memperdalam',
+          hintConclusion: 'Kata dasar "dalam" ialah kata adjektif, maka awalan memper- sudah mencukupi tanpa akhiran -kan.',
+          explanation: 'Bentuk baku Tatabahasa Dewan bagi "memper- + kata adjektif" ialah "memperdalam" (menjadikan lebih mendalam).'
+        }
+      ]
+    };
+
+    // =========================================================================
+    // 4. FISHER-YATES SHUFFLE UTILITY
+    // =========================================================================
+    function shuffleArray(sourceArray) {
+      const arr = [...sourceArray];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // =========================================================================
+    // 5. WEB AUDIO API SOUND SYNTHESIZER
+    // =========================================================================
+    let soundMuted = false;
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type = 'sine', volume = 0.12, delay = 0) {
+      if (soundMuted) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(volume, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + duration);
+    }
+
+    function sfxCorrect(combo) {
+      const boost = Math.min(combo * 35, 220);
+      playTone(523.25 + boost, 0.12, 'triangle', 0.14, 0);
+      playTone(659.25 + boost, 0.18, 'triangle', 0.14, 0.08);
+    }
+
+    function sfxWrong() {
+      playTone(220, 0.18, 'sawtooth', 0.1, 0);
+      playTone(175, 0.22, 'sawtooth', 0.1, 0.12);
+    }
+
+    function sfxVictory() {
+      [523.25, 659.25, 783.99, 1046.5].forEach((n, idx) => {
+        playTone(n, 0.22, 'triangle', 0.14, idx * 0.1);
+      });
+    }
+
+    // =========================================================================
+    // 6. APPLICATION STATE
+    // =========================================================================
+    let currentProfile = null;
+    let activeSession = null;
+    let currentQuestionObj = null;
+    let mistakeCount = 0;
+    let questionLocked = false;
+
+    function normalizeKey(str) {
+      return str.trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    }
+
+    function createEmptyProfile(name, className) {
+      const cleanName = name.trim().replace(/\s+/g, ' ');
+      const cleanClass = className.trim().replace(/\s+/g, ' ').toUpperCase();
+      return {
+        profileId: `${normalizeKey(cleanName)}__${normalizeKey(cleanClass)}`,
+        name: cleanName,
+        className: cleanClass,
+        bestScores: { alfa: 0, beta: 0, omega: 0 },
+        completedSectors: { alfa: false, beta: false, omega: false },
+        stats: { totalAnswered: 0, totalCorrect: 0 },
+        activeSession: null
+      };
+    }
+
+    // =========================================================================
+    // 7. SCREEN NAVIGATION & HUD UPDATES
+    // =========================================================================
+    const screens = {
+      login: document.getElementById('loginScreen'),
+      sector: document.getElementById('sectorScreen'),
+      game: document.getElementById('gameScreen'),
+      result: document.getElementById('resultScreen')
+    };
+
+    function showScreen(name) {
+      Object.entries(screens).forEach(([key, el]) => {
+        el.classList.toggle('hidden', key !== name);
+      });
+      if (name !== 'result') stopConfetti();
+    }
+
+    function applySectorTheme(sectorKey) {
+      document.body.classList.remove('theme-alfa', 'theme-beta', 'theme-omega');
+      const meta = SECTOR_META[sectorKey] || SECTOR_META.alfa;
+      document.body.classList.add(meta.themeClass);
+    }
+
+    function updatePilotHud() {
+      const hud = document.getElementById('pilotHud');
+      if (currentProfile) {
+        hud.classList.remove('hidden');
+        hud.classList.add('flex');
+        document.getElementById('hudPilotName').textContent = currentProfile.name;
+        document.getElementById('hudPilotClass').textContent = currentProfile.className;
+      } else {
+        hud.classList.add('hidden');
+        hud.classList.remove('flex');
+      }
+    }
+
+    function renderSectorCards() {
+      if (!currentProfile) return;
+
+      ['alfa', 'beta', 'omega'].forEach((sec) => {
+        const cap = sec.charAt(0).toUpperCase() + sec.slice(1);
+        const bestEl = document.getElementById(`best${cap}`);
+        const statusEl = document.getElementById(`status${cap}`);
+        const best = currentProfile.bestScores?.[sec] || 0;
+        bestEl.textContent = `${best} / 1000`;
+
+        if (currentProfile.activeSession && currentProfile.activeSession.sector === sec) {
+          const idx = currentProfile.activeSession.currentIndex + 1;
+          statusEl.textContent = `Sedang Berjalan (${idx}/10)`;
+          statusEl.className = 'text-xs font-semibold text-cyan-300';
+        } else if (currentProfile.completedSectors?.[sec]) {
+          statusEl.textContent = 'Selesai';
+          statusEl.className = 'text-xs font-semibold text-emerald-400';
+        } else {
+          statusEl.textContent = 'Belum Dimulakan';
+          statusEl.className = 'text-xs font-semibold text-slate-400';
+        }
+      });
+
+      // Resume Banner
+      const banner = document.getElementById('resumeBanner');
+      if (currentProfile.activeSession) {
+        const s = currentProfile.activeSession;
+        const meta = SECTOR_META[s.sector];
+        document.getElementById('resumeTitle').textContent = `Selamat Kembali, ${currentProfile.name}!`;
+        document.getElementById('resumeDesc').textContent =
+          `Misi ${meta.name} terhenti pada Soalan ${s.currentIndex + 1} daripada ${s.questionOrder.length} (Skor semasa: ${s.score}).`;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 8. GAMEPLAY ENGINE (SHUFFLE + PROGRESSIVE TWO-STAGE HINT)
+    // =========================================================================
+    window.startNewSector = async function (sectorKey) {
+      const bank = QUESTION_BANK[sectorKey];
+      // Fisher-Yates shuffle question IDs for a fresh game
+      const shuffledIds = shuffleArray(bank.map((q) => q.id));
+
+      activeSession = {
+        sector: sectorKey,
+        questionOrder: shuffledIds,
+        currentIndex: 0,
+        score: 0,
+        combo: 0,
+        maxCombo: 0,
+        answers: []
+      };
+
+      currentProfile.activeSession = activeSession;
+      await saveProfile(currentProfile);
+
+      applySectorTheme(sectorKey);
+      showScreen('game');
+      renderCurrentQuestion();
+    };
+
+    function resumeActiveMission() {
+      if (!currentProfile || !currentProfile.activeSession) return;
+      activeSession = currentProfile.activeSession;
+      applySectorTheme(activeSession.sector);
+      showScreen('game');
+      renderCurrentQuestion();
+    }
+
+    function getQuestionById(sectorKey, qId) {
+      return QUESTION_BANK[sectorKey].find((q) => q.id === qId);
+    }
+
+    function renderSentence(q, highlightClues = false, filledText = null, fillState = '') {
+      let beforeHtml = q.before;
+      let afterHtml = q.after;
+
+      if (highlightClues) {
+        // Highlight the exact word immediately before the blank
+        const beforeRegex = new RegExp(`(${escapeRegex(q.beforeWord)})(\\s*)$`, 'i');
+        beforeHtml = beforeHtml.replace(beforeRegex, `<span class="hl-before">$1</span>$2`);
+
+        // Highlight the exact word immediately after the blank
+        const afterRegex = new RegExp(`^(\\s*)(${escapeRegex(q.afterWord)})`, 'i');
+        afterHtml = afterHtml.replace(afterRegex, `$1<span class="hl-after">$2</span>`);
+      }
+
+      const blankContent = filledText ? filledText : '________';
+      const blankClass = fillState ? `blank-slot ${fillState}` : 'blank-slot';
+
+      document.getElementById('sentenceDisplay').innerHTML =
+        `${beforeHtml} <span class="${blankClass}">${blankContent}</span> ${afterHtml}`;
+    }
+
+    function escapeRegex(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function renderCurrentQuestion() {
+      const meta = SECTOR_META[activeSession.sector];
+      const total = activeSession.questionOrder.length;
+      const qId = activeSession.questionOrder[activeSession.currentIndex];
+      currentQuestionObj = getQuestionById(activeSession.sector, qId);
+      mistakeCount = 0;
+      questionLocked = false;
+
+      // Update Header & Progress
+      const sectorLabel = document.getElementById('gameSectorLabel');
+      sectorLabel.textContent = `${meta.name} (${meta.levelLabel})`;
+      sectorLabel.className = `font-display text-sm font-bold uppercase tracking-wider ${meta.textColor}`;
+
+      document.getElementById('gameProgressText').textContent = `Soalan ${activeSession.currentIndex + 1} daripada ${total}`;
+      document.getElementById('gameScore').textContent = activeSession.score;
+      document.getElementById('gameCombo').textContent = `x${activeSession.combo}`;
+
+      const bar = document.getElementById('progressBarFill');
+      bar.className = `h-full rounded-full transition-all duration-500 ${meta.barColor}`;
+      bar.style.width = `${((activeSession.currentIndex + 1) / total) * 100}%`;
+
+      // Update Kata Dasar & Attempt Badge
+      const kd = document.getElementById('kataDasarBadge');
+      kd.textContent = currentQuestionObj.kataDasar;
+      kd.className = `font-display text-sm font-bold tracking-wide ${meta.textColor}`;
+
+      const attemptBadge = document.getElementById('attemptBadge');
+      attemptBadge.textContent = 'Cubaan 1 (+100 mata)';
+      attemptBadge.className = 'text-xs font-semibold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700';
+
+      // Render Sentence (no highlights initially)
+      renderSentence(currentQuestionObj, false, null, '');
+
+      // Reset Hint Panel (Both Stage 1 & Stage 2 hidden)
+      document.getElementById('hintPanel').classList.add('hidden');
+      document.getElementById('hintConclusionBox').classList.add('hidden');
+      document.getElementById('feedbackPanel').classList.add('hidden');
+
+      // Populate Hint Data in advance
+      document.getElementById('hintBeforeWord').textContent = currentQuestionObj.beforeWord;
+      document.getElementById('hintBeforeClass').textContent = currentQuestionObj.beforeClass;
+      document.getElementById('hintAfterWord').textContent = currentQuestionObj.afterWord;
+      document.getElementById('hintAfterClass').textContent = currentQuestionObj.afterClass;
+      document.getElementById('hintConclusionText').textContent = currentQuestionObj.hintConclusion;
+
+      // Fisher-Yates shuffle the 4 answer choices
+      const shuffledOptions = shuffleArray(currentQuestionObj.options);
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+
+      shuffledOptions.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.option = optText;
+        btn.className = 'option-btn w-full text-left px-4 py-3.5 rounded-xl flex items-center gap-3 text-sm sm:text-base font-semibold text-slate-100';
+        const letter = String.fromCharCode(65 + idx);
+        btn.innerHTML = `
+          <span class="w-7 h-7 rounded-lg bg-slate-900/90 border border-slate-700 flex items-center justify-center font-display text-xs font-bold text-slate-300 shrink-0">${letter}</span>
+          <span>${optText}</span>
+        `;
+        btn.addEventListener('click', () => handleOptionClick(optText, btn));
+        grid.appendChild(btn);
+      });
+    }
+
+    async function handleOptionClick(selectedOption, clickedBtn) {
+      if (questionLocked) return;
+
+      const isCorrect = selectedOption === currentQuestionObj.answer;
+
+      if (isCorrect) {
+        questionLocked = true;
+        clickedBtn.classList.add('state-correct');
+        disableAllOptions();
+
+        const pointsEarned = mistakeCount === 0 ? 100 : 50;
+        activeSession.score += pointsEarned;
+        activeSession.combo = mistakeCount === 0 ? activeSession.combo + 1 : 0;
+        if (activeSession.combo > activeSession.maxCombo) {
+          activeSession.maxCombo = activeSession.combo;
+        }
+
+        sfxCorrect(activeSession.combo);
+        renderSentence(currentQuestionObj, mistakeCount > 0, currentQuestionObj.answer, 'filled-correct');
+
+        document.getElementById('gameScore').textContent = activeSession.score;
+        document.getElementById('gameCombo').textContent = `x${activeSession.combo}`;
+
+        showFeedback(
+          true,
+          mistakeCount === 0 ? 'Tepat Sekali!' : 'Tepat pada Cubaan Kedua!',
+          `+${pointsEarned} mata`,
+          currentQuestionObj.explanation
+        );
+
+        await recordAnswerAndSync(selectedOption, true, pointsEarned);
+      } else {
+        // Wrong answer
+        sfxWrong();
+        mistakeCount += 1;
+        clickedBtn.classList.add('state-wrong');
+        clickedBtn.disabled = true;
+
+        if (mistakeCount === 1) {
+          // STAGE 1 MISTAKE:
+          // Show ONLY word-before & word-after Golongan Kata clues + sentence highlights.
+          // DO NOT reveal the final concluding statement yet.
+          renderSentence(currentQuestionObj, true, null, '');
+          document.getElementById('hintPanel').classList.remove('hidden');
+          document.getElementById('hintConclusionBox').classList.add('hidden');
+
+          const attemptBadge = document.getElementById('attemptBadge');
+          attemptBadge.textContent = 'Cubaan 2 (+50 mata)';
+          attemptBadge.className = 'text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40';
+        } else {
+          // STAGE 2 MISTAKE:
+          // NOW reveal the final concluding hint statement, fill the blank with the correct answer,
+          // highlight the correct option, and show the full Tatabahasa Dewan explanation.
+          questionLocked = true;
+          activeSession.combo = 0;
+          document.getElementById('gameCombo').textContent = 'x0';
+
+          disableAllOptions(true);
+          renderSentence(currentQuestionObj, true, currentQuestionObj.answer, 'filled-reveal');
+
+          document.getElementById('hintPanel').classList.remove('hidden');
+          document.getElementById('hintConclusionBox').classList.remove('hidden');
+
+          showFeedback(
+            false,
+            `Jawapan Tepat: ${currentQuestionObj.answer}`,
+            '+0 mata',
+            currentQuestionObj.explanation
+          );
+
+          await recordAnswerAndSync(selectedOption, false, 0);
+        }
+      }
+    }
+
+    function disableAllOptions(highlightCorrect = false) {
+      document.querySelectorAll('#optionsGrid button').forEach((btn) => {
+        btn.disabled = true;
+        if (highlightCorrect && btn.dataset.option === currentQuestionObj.answer) {
+          btn.classList.add('state-correct');
+        }
+      });
+    }
+
+    function showFeedback(isSuccess, title, pointsLabel, explanation) {
+      const panel = document.getElementById('feedbackPanel');
+      const titleEl = document.getElementById('feedbackTitle');
+      const ptsEl = document.getElementById('feedbackPoints');
+      const expEl = document.getElementById('feedbackExplanation');
+
+      panel.classList.remove('hidden');
+      if (isSuccess) {
+        panel.className = 'animate-reveal rounded-2xl p-4 sm:p-5 border bg-emerald-950/45 border-emerald-500/45 space-y-3';
+        titleEl.className = 'font-display text-sm sm:text-base font-bold uppercase tracking-wide text-emerald-300';
+        ptsEl.className = 'text-xs font-display font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-400/40';
+      } else {
+        panel.className = 'animate-reveal rounded-2xl p-4 sm:p-5 border bg-rose-950/45 border-rose-500/45 space-y-3';
+        titleEl.className = 'font-display text-sm sm:text-base font-bold uppercase tracking-wide text-rose-300';
+        ptsEl.className = 'text-xs font-display font-bold px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-200 border border-rose-400/40';
+      }
+
+      titleEl.textContent = title;
+      ptsEl.textContent = pointsLabel;
+      expEl.textContent = explanation;
+
+      const nextBtn = document.getElementById('nextQuestionBtn');
+      const isLast = activeSession.currentIndex >= activeSession.questionOrder.length - 1;
+      nextBtn.textContent = isLast ? 'Lihat Keputusan →' : 'Soalan Seterusnya →';
+    }
+
+    async function recordAnswerAndSync(selectedOption, isCorrect, pointsEarned) {
+      activeSession.answers.push({
+        id: currentQuestionObj.id,
+        sentence: `${currentQuestionObj.before} ${currentQuestionObj.answer} ${currentQuestionObj.after}`,
+        selected: selectedOption,
+        correct: currentQuestionObj.answer,
+        isCorrect,
+        attempts: mistakeCount + (isCorrect ? 1 : 0),
+        explanation: currentQuestionObj.explanation
+      });
+
+      currentProfile.stats.totalAnswered += 1;
+      if (isCorrect) currentProfile.stats.totalCorrect += 1;
+
+      // Save progress after every question
+      currentProfile.activeSession = activeSession;
+      await saveProfile(currentProfile);
+
+      // Send live telemetry to Google Sheets Teacher Monitor
+      const meta = SECTOR_META[activeSession.sector];
+      await sendToGoogleSheet({
+        profileId: currentProfile.profileId,
+        name: currentProfile.name,
+        className: currentProfile.className,
+        currentSector: meta.name,
+        progressText: `${activeSession.currentIndex + 1}/${activeSession.questionOrder.length}`,
+        bestScores: currentProfile.bestScores,
+        stats: currentProfile.stats,
+        lastQuestion: {
+          id: currentQuestionObj.id,
+          kataDasar: currentQuestionObj.kataDasar,
+          selected: selectedOption,
+          correct: currentQuestionObj.answer,
+          isCorrect,
+          pointsEarned
+        },
+        currentScore: activeSession.score
+      });
+    }
+
+    async function advanceQuestion() {
+      if (activeSession.currentIndex < activeSession.questionOrder.length - 1) {
+        activeSession.currentIndex += 1;
+        currentProfile.activeSession = activeSession;
+        await saveProfile(currentProfile);
+        renderCurrentQuestion();
+      } else {
+        await finishSector();
+      }
+    }
+
+    async function finishSector() {
+      const sec = activeSession.sector;
+      if (activeSession.score > (currentProfile.bestScores[sec] || 0)) {
+        currentProfile.bestScores[sec] = activeSession.score;
+      }
+      currentProfile.completedSectors[sec] = true;
+
+      // Clear activeSession so next time starts fresh with a new shuffle
+      const finishedSession = { ...activeSession };
+      currentProfile.activeSession = null;
+      await saveProfile(currentProfile);
+
+      renderResultsScreen(finishedSession);
+      showScreen('result');
+      sfxVictory();
+      launchConfetti();
+    }
+
+    function renderResultsScreen(session) {
+      const total = session.answers.length;
+      const correctCount = session.answers.filter((a) => a.isCorrect).length;
+      const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+      document.getElementById('resultTitle').textContent =
+        accuracy >= 80 ? `Cemerlang, ${currentProfile.name}!` :
+        accuracy >= 50 ? `Bagus, ${currentProfile.name}!` :
+        `Teruskan Usaha, ${currentProfile.name}!`;
+
+      document.getElementById('resultScore').textContent = session.score;
+      document.getElementById('resultAccuracy').textContent = `${accuracy}%`;
+      document.getElementById('resultMaxCombo').textContent = `x${session.maxCombo}`;
+
+      // Star Rating (1 to 3 stars)
+      const stars = accuracy >= 85 ? 3 : accuracy >= 55 ? 2 : 1;
+      const starContainer = document.getElementById('starRating');
+      starContainer.innerHTML = '';
+      for (let i = 1; i <= 3; i++) {
+        const span = document.createElement('span');
+        span.textContent = '★';
+        span.className = i <= stars ? 'text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]' : 'text-slate-700';
+        starContainer.appendChild(span);
+      }
+
+      // Semak Jawapan Review List
+      const reviewList = document.getElementById('reviewList');
+      reviewList.innerHTML = '';
+      session.answers.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = `rounded-xl p-4 border ${
+          item.isCorrect
+            ? 'bg-emerald-950/25 border-emerald-500/30'
+            : 'bg-rose-950/25 border-rose-500/30'
+        }`;
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-1.5">
+            <span class="text-xs font-display font-bold uppercase ${item.isCorrect ? 'text-emerald-300' : 'text-rose-300'}">
+              Soalan ${idx + 1} — ${item.isCorrect ? 'Betul' : 'Perlu Semakan'}
+            </span>
+            <span class="text-xs font-semibold text-slate-300">Jawapan: <strong class="text-white">${item.correct}</strong></span>
+          </div>
+          <p class="text-sm text-slate-100 font-medium mb-1.5">${item.sentence}</p>
+          <p class="text-xs text-slate-400 leading-relaxed">${item.explanation}</p>
+        `;
+        reviewList.appendChild(div);
+      });
+
+      document.getElementById('replaySectorBtn').onclick = () => startNewSector(session.sector);
+    }
+
+    // =========================================================================
+    // 9. EVENT LISTENERS
+    // =========================================================================
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const nameVal = document.getElementById('inputName').value.trim();
+      const classVal = document.getElementById('inputClass').value.trim();
+      const errBox = document.getElementById('loginError');
+
+      if (nameVal.length < 2 || classVal.length < 1) {
+        errBox.textContent = 'Sila masukkan nama murid dan kelas yang sah.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      errBox.classList.add('hidden');
+
+      const tempProfile = createEmptyProfile(nameVal, classVal);
+      const existing = await loadProfile(tempProfile.profileId);
+
+      if (existing) {
+        currentProfile = existing;
+      } else {
+        currentProfile = tempProfile;
+        await saveProfile(currentProfile);
+      }
+
+      updatePilotHud();
+      renderSectorCards();
+      showScreen('sector');
+    });
+
+    document.getElementById('switchUserBtn').addEventListener('click', () => {
+      currentProfile = null;
+      activeSession = null;
+      updatePilotHud();
+      applySectorTheme('alfa');
+      document.getElementById('loginForm').reset();
+      showScreen('login');
+    });
+
+    document.getElementById('resumeMissionBtn').addEventListener('click', resumeActiveMission);
+    document.getElementById('dismissResumeBtn').addEventListener('click', () => {
+      document.getElementById('resumeBanner').classList.add('hidden');
+    });
+
+    document.getElementById('backToSectorsBtn').addEventListener('click', () => {
+      renderSectorCards();
+      showScreen('sector');
+    });
+
+    document.getElementById('resultSectorsBtn').addEventListener('click', () => {
+      renderSectorCards();
+      showScreen('sector');
+    });
+
+    document.getElementById('nextQuestionBtn').addEventListener('click', advanceQuestion);
+
+    document.getElementById('muteBtn').addEventListener('click', () => {
+      soundMuted = !soundMuted;
+      document.getElementById('soundOnIcon').classList.toggle('hidden', soundMuted);
+      document.getElementById('soundOffIcon').classList.toggle('hidden', !soundMuted);
+    });
+
+    // =========================================================================
+    // 10. ANIMATED FUTURISTIC CYBER CANVAS (GRID, PARTICLES, HUD RADAR)
+    // =========================================================================
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgParticles = [];
+    let gridOffset = 0;
+    let radarAngle = 0;
+
+    function resizeBgCanvas() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+      bgParticles = Array.from({ length: 45 }, () => ({
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        r: Math.random() * 2 + 0.8,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        alpha: Math.random() * 0.6 + 0.2
+      }));
+    }
+
+    function getThemeRGB() {
+      if (document.body.classList.contains('theme-beta')) return '245, 158, 11';
+      if (document.body.classList.contains('theme-omega')) return '217, 70, 239';
+      return '34, 211, 238';
+    }
+
+    function animateBg() {
+      const w = bgCanvas.width;
+      const h = bgCanvas.height;
+      const rgb = getThemeRGB();
+
+      bgCtx.clearRect(0, 0, w, h);
+
+      // Deep space gradient
+      const grad = bgCtx.createRadialGradient(w * 0.5, h * 0.25, 40, w * 0.5, h * 0.5, Math.max(w, h) * 0.85);
+      grad.addColorStop(0, `rgba(${rgb}, 0.12)`);
+      grad.addColorStop(0.5, 'rgba(15, 23, 42, 0.92)');
+      grad.addColorStop(1, '#020617');
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, w, h);
+
+      // Perspective Neon Grid (bottom half)
+      const horizonY = h * 0.58;
+      bgCtx.strokeStyle = `rgba(${rgb}, 0.16)`;
+      bgCtx.lineWidth = 1;
+
+      gridOffset = (gridOffset + 0.45) % 40;
+      for (let i = 0; i < 14; i++) {
+        const y = horizonY + Math.pow(i / 13, 1.8) * (h - horizonY) + (gridOffset * (i / 13));
+        if (y <= h) {
+          bgCtx.beginPath();
+          bgCtx.moveTo(0, y);
+          bgCtx.lineTo(w, y);
+          bgCtx.stroke();
+        }
+      }
+
+      const vanishX = w / 2;
+      for (let x = -w; x <= w * 2; x += 90) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(vanishX, horizonY);
+        bgCtx.lineTo(x, h);
+        bgCtx.stroke();
+      }
+
+      // Rotating HUD Radar Ring (top-right subtle accent)
+      radarAngle += 0.008;
+      const rx = w - 110;
+      const ry = 120;
+      bgCtx.save();
+      bgCtx.translate(rx, ry);
+      bgCtx.strokeStyle = `rgba(${rgb}, 0.18)`;
+      bgCtx.lineWidth = 1.5;
+      bgCtx.beginPath();
+      bgCtx.arc(0, 0, 56, 0, Math.PI * 2);
+      bgCtx.stroke();
+      bgCtx.beginPath();
+      bgCtx.arc(0, 0, 34, 0, Math.PI * 2);
+      bgCtx.stroke();
+
+      bgCtx.rotate(radarAngle);
+      bgCtx.strokeStyle = `rgba(${rgb}, 0.45)`;
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, 0);
+      bgCtx.lineTo(56, 0);
+      bgCtx.stroke();
+      bgCtx.restore();
+
+      // Floating Glowing Particles
+      bgParticles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+
+        bgCtx.beginPath();
+        bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(${rgb}, ${p.alpha})`;
+        bgCtx.fill();
+      });
+
+      requestAnimationFrame(animateBg);
+    }
+
+    // =========================================================================
+    // 11. CONFETTI CELEBRATION ENGINE
+    // =========================================================================
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cCtx = confettiCanvas.getContext('2d');
+    let confettiPieces = [];
+    let confettiAnimId = null;
+
+    function launchConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+      confettiCanvas.classList.remove('hidden');
+
+      const colors = ['#22d3ee', '#f59e0b', '#d946ef', '#10b981', '#38bdf8', '#fde047'];
+      confettiPieces = Array.from({ length: 110 }, () => ({
+        x: Math.random() * confettiCanvas.width,
+        y: Math.random() * -confettiCanvas.height * 0.6,
+        w: Math.random() * 9 + 5,
+        h: Math.random() * 5 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: Math.random() * 3.5 + 2,
+        vx: (Math.random() - 0.5) * 2.2,
+        rot: Math.random() * Math.PI * 2,
+        vrot: (Math.random() - 0.5) * 0.15
+      }));
+
+      function step() {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        let active = false;
+        confettiPieces.forEach((p) => {
+          p.y += p.vy;
+          p.x += p.vx;
+          p.rot += p.vrot;
+          if (p.y < confettiCanvas.height + 20) active = true;
+          cCtx.save();
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate(p.rot);
+          cCtx.fillStyle = p.color;
+          cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          cCtx.restore();
+        });
+        if (active) {
+          confettiAnimId = requestAnimationFrame(step);
+        } else {
+          stopConfetti();
+        }
+      }
+      step();
+    }
+
+    function stopConfetti() {
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      confettiAnimId = null;
+      confettiCanvas.classList.add('hidden');
+    }
+
+    // =========================================================================
+    // 12. INITIALIZE ON WINDOW LOAD
+    // =========================================================================
+    window.addEventListener('resize', resizeBgCanvas);
+    window.onload = async function () {
+      resizeBgCanvas();
+      animateBg();
+      updateSheetBadge();
+      await initCloudStorage();
+    };
+  </script>
+</body>
+</html>
